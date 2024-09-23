@@ -3,7 +3,7 @@
 ## Project Overview
 This project automates the generation and distribution of daily stock market analysis reports. It fetches stock data from Alpha Vantage API, processes it using a Python script, and sends out HTML reports via email to recipients using Amazon Simple Email Service (SES).
 
-![Project Architecture](https://app.diagrams.net/#HKaustubhk28%2FStock-Market-Analysis%2Fmain%2FstockMarketAnalysisArchitectureDiagram.drawio#%7B%22pageId%22%3A%22UZsnogP_V1xbn89UY0Al%22%7D)
+![Project Architecture](./stockMarketAnalysisArchitectureDiagram.png)
 
 ## Table of Contents
 - [Features](#features)
