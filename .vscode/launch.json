@@ -1,0 +1,20 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Lambda Function",
+            "type": "python",
+            "request": "launch",
+            "program": "stockMarketAnalysis.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [],
+            "env": {
+                "ALPHA_VANTAGE_API_KEY": "demo",
+                "SENDER_EMAIL": "kaustubhkhedekar28@gmail.com",
+                "RECIPIENT_EMAIL": "kaustubhkhedekar28@gmail.com",
+                "AWS_REGION": "us-east-1"
+            }
+        }
+    ]
+}
