@@ -1,7 +1,11 @@
 # Stock Market Report System
 This system fetches stock market data, generates analysis reports, and sends them to users via email on a daily basis.
+
+## Project Overview
+This workflow fetches stock market data using the Alpha Vantage API, processes it with a Python script, and sends an HTML-based stock market analysis report to users via email using Amazon Simple Email Service (SES). The Python script is containerized using Docker, uploaded to Amazon ECR, and executed using AWS Lambda. The Lambda function is triggered daily by Amazon EventBridge. Amazon DynamoDB stores recipient email addresses, and Amazon CloudWatch monitors the execution of the script.
 Architecture Overview
-Show Image
+![Architecture Diagram](./stockMarketAnalysisArchitectureDiagram.jpg)
+
 Components
 
 Alpha Vantage API: Source of stock market data.
