@@ -8,6 +8,7 @@ This project automates the generation and distribution of daily stock market ana
 ## Table of Contents
 - [Features](#features)
 - [Technologies Used](#technologies-used)
+- [Workflow](#workflow)
 - [Setup and Installation](#setup-and-installation)
 - [Usage](#usage)
 - [Project Structure](#project-structure)
@@ -117,8 +118,14 @@ stock-market-analysis/
 ├── README.md
 └── config.yaml
 ```
-
 ## Configuration
+
+Set the following environment variables in your Lambda function:
+
+- `ALPHA_VANTAGE_API_KEY`: Your Alpha Vantage API key
+- `DYNAMODB_TABLE_NAME`: Name of your DynamoDB table (e.g., `subscribers`)
+- `SES_SENDER_EMAIL`: Verified email address for sending reports
+- `AWS_REGION`: AWS region where your services are deployed
 - Update `config.yaml` with your Alpha Vantage API key and other configuration parameters.
 - Modify the list of stock tickers in `src/main.py` as needed.
 
@@ -138,98 +145,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Setup and Deployment
-
-1. **AWS Account Setup**:
-   - Ensure you have an AWS account with necessary permissions.
-
-2. **Alpha Vantage API**:
-   - Sign up for an Alpha Vantage API key at https://www.alphavantage.co/
-
-3. **Docker Image**:
-   - Build the Docker image containing the Python script and dependencies.
-   - Push the image to Amazon ECR:
-     ```
-     aws ecr get-login-password --region region | docker login --username AWS --password-stdin your-account-id.dkr.ecr.region.amazonaws.com
-     docker build -t stock-market-report .
-     docker tag stock-market-report:latest your-account-id.dkr.ecr.region.amazonaws.com/stock-market-report:latest
-     docker push your-account-id.dkr.ecr.region.amazonaws.com/stock-market-report:latest
-     ```
-
-4. **AWS Lambda**:
-   - Create a new Lambda function, selecting "Container image" as the source.
-   - Choose the ECR image you pushed in step 3.
-   - Set the function timeout to an appropriate value (e.g., 5 minutes).
-   - Configure environment variables (see [Configuration](#configuration) section).
-
-5. **DynamoDB**:
-   - Create a table named `EmailCredentials` with a primary key `email`.
-
-6. **Amazon SES**:
-   - Verify your sender email address in SES.
-   - If in sandbox mode, verify recipient email addresses as well.
-
-7. **EventBridge**:
-   - Create a new rule in EventBridge:
-     - Schedule: Cron expression `0 13 ? * MON-FRI *` (8 AM ET, Mon-Fri)
-     - Target: The Lambda function created in step 4
-
-8. **IAM Permissions**:
-   - Ensure the Lambda function's execution role has permissions for:
-     - DynamoDB: Read access to the `subscribers` table
-     - SES: Send email permission
-     - CloudWatch: Create log groups and log events
-
-## Configuration
-
-Set the following environment variables in your Lambda function:
-
-- `ALPHA_VANTAGE_API_KEY`: Your Alpha Vantage API key
-- `DYNAMODB_TABLE_NAME`: Name of your DynamoDB table (e.g., `subscribers`)
-- `SES_SENDER_EMAIL`: Verified email address for sending reports
-- `AWS_REGION`: AWS region where your services are deployed
-
-## Monitoring and Logging
-
-- **CloudWatch Logs**: 
-  - Check `/aws/lambda/your-function-name` log group for Lambda execution logs.
-  - Look for any errors or warnings in the logs.
-
-- **CloudWatch Metrics**:
-  - Monitor Lambda metrics like invocations, duration, and errors.
-  - Set up CloudWatch Alarms for critical metrics.
-
-- **SES Metrics**:
-  - Monitor email sending success rate and bounce rate.
-
-## Troubleshooting
-
-1. **Lambda function times out**:
-   - Increase the function timeout in Lambda configuration.
-   - Optimize the Python script for faster execution.
-
-2. **Email not received**:
-   - Check SES console for sending errors.
-   - Verify recipient email if in SES sandbox mode.
-   - Check spam folder of recipient's email.
-
-3. **DynamoDB read failures**:
-   - Verify IAM permissions for Lambda to access DynamoDB.
-   - Check DynamoDB table name in environment variables.
-
-4. **Alpha Vantage API errors**:
-   - Verify API key in environment variables.
-   - Check Alpha Vantage API status and quota limits.
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
 
