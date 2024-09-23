@@ -1,35 +1,140 @@
-# Stock Market Analysis Report Automation
+# Stock Market Report System
 
-This project automates the process of retrieving stock market data, analyzing it, and sending the results to multiple recipients via email using AWS services.
+## Table of Contents
+1. [Overview](#overview)
+2. [Architecture](#architecture)
+3. [Components](#components)
+4. [Workflow](#workflow)
+5. [Setup and Deployment](#setup-and-deployment)
+6. [Configuration](#configuration)
+7. [Monitoring and Logging](#monitoring-and-logging)
+8. [Troubleshooting](#troubleshooting)
+9. [Contributing](#contributing)
+10. [License](#license)
 
-## Architecture Overview
+## Overview
 
-The architecture involves multiple AWS services such as Lambda, EventBridge, SES, DynamoDB, and CloudWatch. The stock data is retrieved from Alpha Vantage API, processed by a Python script, and sent via email using Amazon SES. The Python script is containerized using Docker and deployed to AWS Lambda.
+This Stock Market Report System fetches daily stock market data, generates analysis reports, and automatically emails them to subscribed users. It leverages various AWS services to ensure reliable, scalable, and automated operations.
 
-![Architecture Diagram](./stockMarketAnalysisArchitectureDiagram.jpg)
+## Architecture
+
+![Architecture Diagram](architecture-diagram.png)
 
 ## Components
 
-- **Alpha Vantage API**: Retrieves stock market data.
-- **Python Script**: Processes data, generates an HTML report, and sends it via email.
-- **Docker & Amazon ECR**: Containerizes the Python script and stores it in ECR.
-- **AWS Lambda**: Executes the Dockerized Python script as a Lambda function.
-- **Amazon EventBridge**: Triggers the Lambda function every morning at 8 AM ET.
-- **Amazon SES**: Sends HTML reports to recipients via email.
-- **Amazon DynamoDB**: Stores recipients' email addresses.
-- **Amazon CloudWatch**: Logs and monitors the execution of the Lambda function.
+1. **Alpha Vantage API**: External API providing stock market data.
+2. **Python Script**: Core logic for data fetching, processing, and report generation.
+3. **Docker**: Containerization of the Python script and its dependencies.
+4. **Amazon ECR (Elastic Container Registry)**: Hosts the Docker image.
+5. **AWS Lambda**: Serverless compute service running the Docker image.
+6. **Amazon EventBridge**: Scheduler for triggering the Lambda function.
+7. **Amazon DynamoDB**: NoSQL database storing user email addresses.
+8. **Amazon SES (Simple Email Service)**: Email service for sending reports.
+9. **Amazon CloudWatch**: Monitoring and logging service.
 
-## Project Setup
+## Workflow
 
-### 1. Prerequisites
+1. Amazon EventBridge triggers the AWS Lambda function daily at 8 AM ET.
+2. Lambda executes the Docker image containing the Python script.
+3. The script performs the following actions:
+   a. Fetches latest stock data from Alpha Vantage API.
+   b. Retrieves subscriber email addresses from DynamoDB.
+   c. Generates an HTML report with stock market analysis.
+4. Amazon SES sends the HTML report to each subscriber.
+5. CloudWatch logs all activities and monitors system performance.
 
-- **AWS Account**: For setting up AWS services like Lambda, DynamoDB, SES, EventBridge, and CloudWatch.
-- **Alpha Vantage API Key**: To retrieve stock market data.
-- **Docker Installed**: To containerize the Python script.
+## Setup and Deployment
 
-### 2. Clone the Repository
+1. **AWS Account Setup**:
+   - Ensure you have an AWS account with necessary permissions.
 
-Clone this repository to your local machine using the following command:
+2. **Alpha Vantage API**:
+   - Sign up for an Alpha Vantage API key at https://www.alphavantage.co/
 
-```bash
-git clone <repository-url>
+3. **Docker Image**:
+   - Build the Docker image containing the Python script and dependencies.
+   - Push the image to Amazon ECR:
+     ```
+     aws ecr get-login-password --region region | docker login --username AWS --password-stdin your-account-id.dkr.ecr.region.amazonaws.com
+     docker build -t stock-market-report .
+     docker tag stock-market-report:latest your-account-id.dkr.ecr.region.amazonaws.com/stock-market-report:latest
+     docker push your-account-id.dkr.ecr.region.amazonaws.com/stock-market-report:latest
+     ```
+
+4. **AWS Lambda**:
+   - Create a new Lambda function, selecting "Container image" as the source.
+   - Choose the ECR image you pushed in step 3.
+   - Set the function timeout to an appropriate value (e.g., 5 minutes).
+   - Configure environment variables (see [Configuration](#configuration) section).
+
+5. **DynamoDB**:
+   - Create a table named `subscribers` with a primary key `email`.
+
+6. **Amazon SES**:
+   - Verify your sender email address in SES.
+   - If in sandbox mode, verify recipient email addresses as well.
+
+7. **EventBridge**:
+   - Create a new rule in EventBridge:
+     - Schedule: Cron expression `0 13 ? * MON-FRI *` (8 AM ET, Mon-Fri)
+     - Target: The Lambda function created in step 4
+
+8. **IAM Permissions**:
+   - Ensure the Lambda function's execution role has permissions for:
+     - DynamoDB: Read access to the `subscribers` table
+     - SES: Send email permission
+     - CloudWatch: Create log groups and log events
+
+## Configuration
+
+Set the following environment variables in your Lambda function:
+
+- `ALPHA_VANTAGE_API_KEY`: Your Alpha Vantage API key
+- `DYNAMODB_TABLE_NAME`: Name of your DynamoDB table (e.g., `subscribers`)
+- `SES_SENDER_EMAIL`: Verified email address for sending reports
+- `AWS_REGION`: AWS region where your services are deployed
+
+## Monitoring and Logging
+
+- **CloudWatch Logs**: 
+  - Check `/aws/lambda/your-function-name` log group for Lambda execution logs.
+  - Look for any errors or warnings in the logs.
+
+- **CloudWatch Metrics**:
+  - Monitor Lambda metrics like invocations, duration, and errors.
+  - Set up CloudWatch Alarms for critical metrics.
+
+- **SES Metrics**:
+  - Monitor email sending success rate and bounce rate.
+
+## Troubleshooting
+
+1. **Lambda function times out**:
+   - Increase the function timeout in Lambda configuration.
+   - Optimize the Python script for faster execution.
+
+2. **Email not received**:
+   - Check SES console for sending errors.
+   - Verify recipient email if in SES sandbox mode.
+   - Check spam folder of recipient's email.
+
+3. **DynamoDB read failures**:
+   - Verify IAM permissions for Lambda to access DynamoDB.
+   - Check DynamoDB table name in environment variables.
+
+4. **Alpha Vantage API errors**:
+   - Verify API key in environment variables.
+   - Check Alpha Vantage API status and quota limits.
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+
