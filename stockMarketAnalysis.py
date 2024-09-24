@@ -23,7 +23,7 @@ warnings.filterwarnings("ignore")
 # Set the MPLCONFIGDIR to use the /tmp directory
 os.environ['MPLCONFIGDIR'] = '/tmp'
 
-api_key = 'LKZ11L9LYCWIG88T'
+api_key = 'demo'
 aws_region = 'us-east-1'
 table_name = "EmailCredentials"
 
