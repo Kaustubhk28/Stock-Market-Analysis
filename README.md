@@ -63,7 +63,7 @@ This project automates the generation and distribution of daily stock market ana
 ### Steps
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/stock-market-analysis.git
+   git clone https://github.com/Kaustubhk28/stock-market-analysis.git
    cd stock-market-analysis
    ```
 
